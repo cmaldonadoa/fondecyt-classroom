@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MLAPI;
+using MLAPI.NetworkVariable;
 
-public class GameState : MonoBehaviour
+public class GameStateGlobal : NetworkBehaviour
 {
     public enum GameVariant
     {

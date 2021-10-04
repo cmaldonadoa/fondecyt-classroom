@@ -2,26 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using MLAPI;
+using MLAPI.SceneManagement;
 
 public class InitMenu : MonoBehaviour
 {
     void PlayGame()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        NetworkSceneManager.SwitchScene("Classroom");
     }
     public void PlayGameLenguaje()
     {
-        GameState.gameVariant = GameState.GameVariant.Lenguaje;
+        GameStateGlobal.gameVariant = GameStateGlobal.GameVariant.Lenguaje;
         PlayGame();
     }
     public void PlayGameMatematicas()
     {
-        GameState.gameVariant = GameState.GameVariant.Matematicas;
+        GameStateGlobal.gameVariant = GameStateGlobal.GameVariant.Matematicas;
         PlayGame();
     }
     public void PlayGameBiologia()
     {
-        GameState.gameVariant = GameState.GameVariant.Biologia;
+        GameStateGlobal.gameVariant = GameStateGlobal.GameVariant.Biologia;
         PlayGame();
     }
 }

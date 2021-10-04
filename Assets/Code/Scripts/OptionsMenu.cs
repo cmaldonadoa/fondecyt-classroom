@@ -55,21 +55,21 @@ public class OptionsMenu : MonoBehaviour
     public void SelectFileLenguaje(int index)
     {
         Transform filename = transform.Find("Scrollback/Options/Lenguaje/Filename" + (index + 1));
-        SelectFile((clip) => GameState.SetLenguajeClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => GameStateGlobal.SetLenguajeClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileMatematicas(int index)
     {
         Transform filename = transform.Find("Scrollback/Options/Matematicas/Filename" + (index + 1));
-        SelectFile((clip) => GameState.SetMatematicasClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => GameStateGlobal.SetMatematicasClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileBiologia(int index)
     {
         Transform filename = transform.Find("Scrollback/Options/Biologia/Filename" + (index + 1));
-        SelectFile((clip) => GameState.SetBiologiaClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => GameStateGlobal.SetBiologiaClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileInformar(int index)
     {
         Transform filename = transform.Find("Scrollback/Options/Informar/Filename" + (index + 1));
-        SelectFile((clip) => GameState.SetInformarClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => GameStateGlobal.SetInformarClip(index, clip), filename.GetComponent<Text>());
     }
 }

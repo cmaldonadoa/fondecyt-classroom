@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using MLAPI;
 
 public class StundentController : MonoBehaviour
 {
@@ -22,9 +23,11 @@ public class StundentController : MonoBehaviour
 
     void Start()
     {
+        if (GameStateLocal.GetInstanceType() == GameStateLocal.GameInstanceType.Client) return;
+
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
-        clips = GameState.GetClips();
+        clips = GameStateGlobal.GetClips();
 
         if (player == Player.Player1)
         {
@@ -40,17 +43,21 @@ public class StundentController : MonoBehaviour
     {
         if (keyControl == null) return;
 
-        if (keyControl.wasPressedThisFrame)
-        {   
-            if (animator.GetBool("IsHandUp"))
+            if (keyControl.wasPressedThisFrame)
             {
-                audioSource.Play();
-            } else
-            {
-                audioSource.clip = clips[(int)player - 1];
-            }
+                if (animator.GetBool("IsHandUp"))
+                {
+                    audioSource.Play();
+                }
+                else
+                {
+                    audioSource.clip = clips[(int)player - 1];
+                }
 
-            animator.SetBool("IsHandUp", !animator.GetBool("IsHandUp"));
-        }
+                animator.SetBool("IsHandUp", !animator.GetBool("IsHandUp"));
+            var canvas = GameObject.FindGameObjectsWithTag("HostView")[0];
+            canvas.GetComponent<StatsController>().NewLap();
+            }
+        
     }
 }
