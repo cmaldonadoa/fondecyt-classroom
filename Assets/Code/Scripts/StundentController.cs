@@ -4,43 +4,48 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using MLAPI;
+using MLAPI.NetworkVariable;
 
-public class StundentController : MonoBehaviour
+public enum Player
 {
-    public enum Player {
-        None,
-        Player1,
-        Player2
-    }
+    None,
+    Player1,
+    Player2
+}
 
+public class StundentController : NetworkBehaviour
+{
     public Player player;
 
-    Animator animator;
-    AudioClip[] clips = new AudioClip[2];
-    AudioSource audioSource;
-    KeyControl keyControl = null;
-
+    private Animator animator;
+    private NetworkVariableAudioClip clip = new NetworkVariableAudioClip();
+    private AudioSource audioSource;
+    private KeyControl keyControl = null;
+    private bool isTalking = false;
 
     void Start()
     {
-        if (GameStateLocal.GetInstanceType() == GameStateLocal.GameInstanceType.Client) return;
+        if (!IsServer) return;
 
+        GameObject.FindWithTag("GameController").TryGetComponent(out ServerManager server);
+        clip.Value = server.GetClip((int)player);
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
-        clips = GameStateGlobal.GetClips();
 
-        if (player == Player.Player1)
-        {
-            keyControl = Keyboard.current.digit1Key;
-        }
-        else if (player == Player.Player2)
-        {
-            keyControl = Keyboard.current.digit2Key;
-        }
+        if (player == Player.Player1) keyControl = Keyboard.current.digit1Key;
+        else if (player == Player.Player2) keyControl = Keyboard.current.digit2Key;
     }
 
     void Update()
     {
+        if (!IsServer) return;
+
+        if (clip.Value && !audioSource.isPlaying && isTalking)
+        {
+            animator.SetBool("IsTalking", false);
+            isTalking = false;
+        }
+
         if (keyControl == null) return;
 
             if (keyControl.wasPressedThisFrame)
@@ -48,16 +53,18 @@ public class StundentController : MonoBehaviour
                 if (animator.GetBool("IsHandUp"))
                 {
                     audioSource.Play();
+                    animator.SetBool("IsTalking", true);
+                    isTalking = true;
                 }
                 else
                 {
-                    audioSource.clip = clips[(int)player - 1];
+                    audioSource.clip = clip.Value;
                 }
 
                 animator.SetBool("IsHandUp", !animator.GetBool("IsHandUp"));
-            var canvas = GameObject.FindGameObjectsWithTag("HostView")[0];
-            canvas.GetComponent<StatsController>().NewLap();
+
+                Camera.main.transform.Find("Canvas").TryGetComponent(out StatsController stats);
+                stats.NewLapFromInput();
             }
-        
     }
 }

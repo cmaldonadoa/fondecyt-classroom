@@ -12,7 +12,7 @@ public class Timer : MonoBehaviour
 
     private string format(string n)
     {
-        if (n.Length == 2) return n;
+        if (n.Length == 2 || n.Length == 5) return n;
         return "0" + n;
     }
 
@@ -38,5 +38,10 @@ public class Timer : MonoBehaviour
     public string GetTime()
     {
         return currentTime;
+    }
+
+    public void Stop()
+    {
+        stopped = true;
     }
 }

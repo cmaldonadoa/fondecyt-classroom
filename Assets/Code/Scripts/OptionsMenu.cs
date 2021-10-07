@@ -54,22 +54,26 @@ public class OptionsMenu : MonoBehaviour
 
     public void SelectFileLenguaje(int index)
     {
+        GameObject.FindWithTag("GameControoler").TryGetComponent(out ServerManager server);
         Transform filename = transform.Find("Scrollback/Options/Lenguaje/Filename" + (index + 1));
-        SelectFile((clip) => GameStateGlobal.SetLenguajeClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => server.SetLenguajeClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileMatematicas(int index)
     {
+        GameObject.FindWithTag("GameControoler").TryGetComponent(out ServerManager server);
         Transform filename = transform.Find("Scrollback/Options/Matematicas/Filename" + (index + 1));
-        SelectFile((clip) => GameStateGlobal.SetMatematicasClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => server.SetMatematicasClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileBiologia(int index)
     {
+        GameObject.FindWithTag("GameControoler").TryGetComponent(out ServerManager server);
         Transform filename = transform.Find("Scrollback/Options/Biologia/Filename" + (index + 1));
-        SelectFile((clip) => GameStateGlobal.SetBiologiaClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => server.SetBiologiaClip(index, clip), filename.GetComponent<Text>());
     }
     public void SelectFileInformar(int index)
     {
+        GameObject.FindWithTag("GameControoler").TryGetComponent(out ServerManager server);
         Transform filename = transform.Find("Scrollback/Options/Informar/Filename" + (index + 1));
-        SelectFile((clip) => GameStateGlobal.SetInformarClip(index, clip), filename.GetComponent<Text>());
+        SelectFile((clip) => server.SetInformarClip(index, clip), filename.GetComponent<Text>());
     }
 }
