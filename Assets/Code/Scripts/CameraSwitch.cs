@@ -16,8 +16,11 @@ public class CameraSwitch : MonoBehaviour
 
     void Awake()
     {
-        if (NetworkManager.Singleton.IsServer && allowedIn != NetworkType.Server) gameObject.SetActive(false) ;
+        var IsOnlyServer = NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsHost;
+        var IsOnlyClient = NetworkManager.Singleton.IsClient && !NetworkManager.Singleton.IsHost;
+
+        if (IsOnlyServer && allowedIn != NetworkType.Server) gameObject.SetActive(false) ;
         if (NetworkManager.Singleton.IsHost && allowedIn != NetworkType.Host) gameObject.SetActive(false);
-        if (NetworkManager.Singleton.IsClient && allowedIn != NetworkType.Client) gameObject.SetActive(false);
+        if (IsOnlyClient && allowedIn != NetworkType.Client) gameObject.SetActive(false);
     }
 }

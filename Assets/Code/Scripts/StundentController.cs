@@ -18,29 +18,21 @@ public class StundentController : NetworkBehaviour
     public Player player;
 
     private Animator animator;
-    private NetworkVariableAudioClip clip = new NetworkVariableAudioClip();
     private AudioSource audioSource;
     private KeyControl keyControl = null;
     private bool isTalking = false;
 
-    void Start()
+    private void Awake()
     {
-        if (!IsServer) return;
-
-        GameObject.FindWithTag("GameController").TryGetComponent(out ServerManager server);
-        clip.Value = server.GetClip((int)player);
-        animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
-
-        if (player == Player.Player1) keyControl = Keyboard.current.digit1Key;
-        else if (player == Player.Player2) keyControl = Keyboard.current.digit2Key;
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        if (!IsServer) return;
+        if (!IsHost) return;
 
-        if (clip.Value && !audioSource.isPlaying && isTalking)
+        if (!!audioSource.clip && !audioSource.isPlaying && isTalking)
         {
             animator.SetBool("IsTalking", false);
             isTalking = false;
@@ -48,23 +40,51 @@ public class StundentController : NetworkBehaviour
 
         if (keyControl == null) return;
 
-            if (keyControl.wasPressedThisFrame)
+        if (keyControl.wasPressedThisFrame)
+        {
+            if (animator.GetBool("IsHandUp"))
             {
-                if (animator.GetBool("IsHandUp"))
-                {
-                    audioSource.Play();
-                    animator.SetBool("IsTalking", true);
-                    isTalking = true;
-                }
-                else
-                {
-                    audioSource.clip = clip.Value;
-                }
-
-                animator.SetBool("IsHandUp", !animator.GetBool("IsHandUp"));
-
-                Camera.main.transform.Find("Canvas").TryGetComponent(out StatsController stats);
-                stats.NewLapFromInput();
+                audioSource.Play();
+                animator.SetBool("IsTalking", true);
+                isTalking = true;
             }
+
+            animator.SetBool("IsHandUp", !animator.GetBool("IsHandUp"));
+
+            Camera.main.transform.Find("Canvas").TryGetComponent(out StatsController stats);
+            stats.NewLapFromInput();
+        }
+    }
+
+    public void RaiseHand(Player onlyPlayer=Player.Player1)
+    {
+        if (player != onlyPlayer) return;
+
+        animator.SetBool("IsHandUp", true);
+        Camera.main.transform.Find("Canvas").TryGetComponent(out StatsController stats);
+        stats.NewLapFromInput();
+    }
+
+    public void SetAudio(AudioClip clip)
+    {
+        audioSource.clip = clip;
+    }
+
+    public void AsPlayer1()
+    {
+        player = Player.Player1;
+        keyControl = Keyboard.current.digit1Key;
+    }
+
+    public void AsPlayer2()
+    {
+        player = Player.Player2;
+        keyControl = Keyboard.current.digit2Key;
+    }
+
+    public void AsUnplayable()
+    {
+        player = Player.None;
+        keyControl = null;
     }
 }

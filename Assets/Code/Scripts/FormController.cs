@@ -1,12 +1,16 @@
-﻿using System.Collections;
+﻿using MLAPI;
+using MLAPI.Messaging;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FormController : MonoBehaviour
-{
+public class FormController : NetworkBehaviour
+{ 
     public void SendForm()
     {
+        if (!IsHost) return;
+
         var name = transform.Find("Name/InputField").GetComponent<InputField>().text;
         var age = transform.Find("Age/InputField").GetComponent<InputField>().text;
         var experience = transform.Find("Experience/InputField").GetComponent<InputField>().text;
@@ -15,9 +19,13 @@ public class FormController : MonoBehaviour
         var disciplineId = transform.Find("Discipline/Dropdown").GetComponent<Dropdown>().value;
         var discipline = transform.Find("Discipline/Dropdown").GetComponent<Dropdown>().options[disciplineId].text;
 
-        GameObject.FindWithTag("GameController").TryGetComponent(out ServerManager server);
-        server.StartGame();
-        server.SaveClientData(name, age, genre, experience, discipline);
+
+        var clients = GameObject.FindGameObjectsWithTag("Player");
+        foreach(GameObject c in clients)
+        {
+            var server = c.GetComponent<ServerManager>();
+            server.SaveClientData(name, age, genre, experience, discipline);
+        }
     }
 
      private void EnableContinue()

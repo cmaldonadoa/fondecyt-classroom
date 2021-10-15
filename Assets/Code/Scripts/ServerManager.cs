@@ -6,6 +6,7 @@ using MLAPI;
 using MLAPI.Messaging;
 using MLAPI.SceneManagement;
 using System;
+using MLAPI.NetworkVariable;
 
 [Serializable]
 public struct ClipsHolder
@@ -37,6 +38,7 @@ public class ServerManager : NetworkBehaviour
     // Client data 
     public ClientData clientData;
     private Discipline _disclipine;
+    public bool clientSet = false;
 
     // Audio files
     [SerializeField]
@@ -49,19 +51,31 @@ public class ServerManager : NetworkBehaviour
     private ClipsHolder informarClips;
 
     // Timer
-    private readonly int[] times = { 10, 10, 10, 10 };
+    private readonly int[] times = { 120, 600, 120, 600, 0 };
     private bool timerIsActive = false;
-    private int stage = 0;
+    private NetworkVariableInt stage = new NetworkVariableInt(new NetworkVariableSettings { WritePermission = NetworkVariablePermission.ServerOnly }, 0);
     private float timeRemaining = 0;
+    private bool handRaised = false;
 
     private void Awake()
     {
         DontDestroyOnLoad(this);
+        stage.OnValueChanged += OnChangeStage;
+        biologiaClips.FirstAudio = Resources.Load("Audios/P1_Camila_Biologia") as AudioClip;
+        biologiaClips.SecondAudio = Resources.Load("Audios/P2_Jorge_Biologia") as AudioClip;
+        lenguajeClips.FirstAudio = Resources.Load("Audios/P1_Camila_Lenguaje") as AudioClip;
+        lenguajeClips.SecondAudio = Resources.Load("Audios/P2_Jorge_Lenguaje") as AudioClip;
+        matematicasClips.FirstAudio = Resources.Load("Audios/P1_Camila_Matematicas") as AudioClip;
+        matematicasClips.SecondAudio = Resources.Load("Audios/P2_Jorge_Matematicas") as AudioClip;
+        informarClips.FirstAudio = Resources.Load("Audios/P1_Matias_Informar") as AudioClip;
+        informarClips.SecondAudio = Resources.Load("Audios/P2_Catalina_Informar") as AudioClip;
     }
 
     public void SaveClientData(string name, string age, string genre, string experience, string discipline)
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
+
+        Debug.Log("saved client data");
 
         clientData.Name = name;
         clientData.Age = age;
@@ -71,26 +85,53 @@ public class ServerManager : NetworkBehaviour
         if (discipline == "Lenguaje") _disclipine = Discipline.Lenguaje;
         if (discipline == "Biología") _disclipine = Discipline.Biologia;
         if (discipline == "Matemáticas") _disclipine = Discipline.Matematicas;
-    }
+        clientSet = true;
 
-    [ClientRpc]
-    private void GoToClassroomClientRpc()
-    {
-        Debug.Log("aaaa");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        StartGame();
     }
 
     public void StartGame()
     {
-        if (!IsServer) return;
-        //GoToClassroomClientRpc();
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-        NetworkSceneManager.SwitchScene("Classroom");
+        if (!IsHost || !IsOwner) return;
+        NetworkSceneManager.SwitchScene("Main");
+    }
+
+    void SetUp()
+    {
+        if (!IsHost || !IsOwner) return;
+
+        GameObject.Find("Students/camila").TryGetComponent(out StundentController camila);
+        GameObject.Find("Students/jorge").TryGetComponent(out StundentController jorge);
+        GameObject.Find("Students/catalina").TryGetComponent(out StundentController catalina);
+        GameObject.Find("Students/matias").TryGetComponent(out StundentController matias);
+
+        if (_disclipine != Discipline.Informar)
+        {
+            camila.AsPlayer1();
+            camila.SetAudio(GetClip(1));
+
+            jorge.AsPlayer2();
+            jorge.SetAudio(GetClip(2));
+
+            matias.AsUnplayable();
+            catalina.AsUnplayable();
+        }
+        else
+        {
+            camila.AsUnplayable();
+            jorge.AsUnplayable();
+
+            matias.AsPlayer1();
+            matias.SetAudio(GetClip(1));
+
+            catalina.AsPlayer2();
+            catalina.SetAudio(GetClip(2));
+        }
     }
 
     public void SetLenguajeClip(int index, AudioClip clip)
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
         if (index > 1) return;
 
         if (index == 0) lenguajeClips.FirstAudio = clip;
@@ -98,7 +139,7 @@ public class ServerManager : NetworkBehaviour
     }
     public void SetBiologiaClip(int index, AudioClip clip)
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
         if (index > 1) return;
 
         if (index == 0) biologiaClips.FirstAudio = clip;
@@ -106,7 +147,7 @@ public class ServerManager : NetworkBehaviour
     }
     public void SetMatematicasClip(int index, AudioClip clip)
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
         if (index > 1) return;
 
         if (index == 0) matematicasClips.FirstAudio = clip;
@@ -114,44 +155,49 @@ public class ServerManager : NetworkBehaviour
     }
     public void SetInformarClip(int index, AudioClip clip)
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
         if (index > 1) return;
 
         if (index == 0) informarClips.FirstAudio = clip;
         else informarClips.SecondAudio = clip;
     }
 
-
-    [ClientRpc]
-    private void SetAudiosClientRpc(AudioClip a1, AudioClip a2)
-    {
-        Debug.Log("Client audios set");
-
-        //Camera.main.transform.Find("Canvas").TryGetComponent(out ClientManager client);
-        //client.SetClips(a1, a2);
-    }
-
     public void StartTimer()
     {
-        if (!IsServer) return;
-        SetAudiosClientRpc(GetClip(1), GetClip(2));
-        timeRemaining = times[stage];
+        if (!IsHost || !IsOwner) return;
+
+        SetUp();
+        timeRemaining = times[stage.Value];
         timerIsActive = true;
     }
 
-    [ClientRpc]
-    private void UpdateClientRpc(int stage)
+    void OnChangeStage(int oldValue, int newValue)
     {
-        Debug.Log("Client Updated");
+        if (IsHost) return;
 
-        //var state = stage % 2 == 0;
-        //Camera.main.transform.Find("Canvas").gameObject.SetActive(state);
+        Camera.main.transform.Find("Canvas").gameObject.SetActive(newValue % 2 == 0);
     }
+
 
     private void Update()
     {
-        if (!IsServer) return;
+        if (!IsHost || !IsOwner) return;
         if (!timerIsActive) return;
+
+        if (stage.Value % 2 == 1 && !handRaised && timeRemaining < times[stage.Value] / 2)
+        {
+            GameObject.Find("Students/camila").TryGetComponent(out StundentController camila);
+            GameObject.Find("Students/jorge").TryGetComponent(out StundentController jorge);
+            GameObject.Find("Students/catalina").TryGetComponent(out StundentController catalina);
+            GameObject.Find("Students/matias").TryGetComponent(out StundentController matias);
+
+            camila.RaiseHand();
+            jorge.RaiseHand();
+            catalina.RaiseHand();
+            matias.RaiseHand();
+
+            handRaised = true;
+        }
 
         if (timeRemaining > 0)
         {
@@ -159,17 +205,19 @@ public class ServerManager : NetworkBehaviour
         }
         else
         {
-            timeRemaining = times[stage];
-            stage++;
+            stage.Value++;
+            timeRemaining = times[stage.Value];
 
             Camera.main.transform.Find("Canvas").TryGetComponent(out StatsController stats);
-            stats.SetStage(stage);
+            stats.SetStage(stage.Value);
 
-            UpdateClientRpc(stage);
+            if (stage.Value == 2) {
+                _disclipine = Discipline.Informar;
+                handRaised = false;
+                SetUp();
+            }
 
-            if (stage == 2) _disclipine = Discipline.Informar;
-
-            if (stage > 3)
+            if (stage.Value == 4)
             {
                 timerIsActive = false;
                 LastStageReached.Invoke(this, EventArgs.Empty);
@@ -197,6 +245,21 @@ public class ServerManager : NetworkBehaviour
         }
 
         return null;
+    }
+    public void Disconnect()
+    {
+        if (IsHost)
+        {
+            NetworkManager.Singleton.StopHost();
+        }
+        else if (IsClient)
+        {
+            NetworkManager.Singleton.StopClient();
+        }
+        else if (IsServer)
+        {
+            NetworkManager.Singleton.StopServer();
+        }
     }
 
     public event EventHandler LastStageReached;

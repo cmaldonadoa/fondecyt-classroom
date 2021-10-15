@@ -7,14 +7,14 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Talking
+  m_Name: Talk
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 4564055458416731623}
-    m_Position: {x: 381.43347, y: 138.4801, z: 0}
+    m_Position: {x: 380, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -2231355587818945085}
-    m_Position: {x: 350, y: 310, z: 0}
+    m_Position: {x: 380, y: 300, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -98,7 +98,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -7866870783708510420, guid: 50eb08e9791a1e34da58066ab692c213, type: 3}
+  m_Motion: {fileID: 1396336468291432467, guid: 50eb08e9791a1e34da58066ab692c213, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -199,7 +199,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 4470969737399979745, guid: 50eb08e9791a1e34da58066ab692c213, type: 3}
+  m_Motion: {fileID: -3405034781404549590, guid: 50eb08e9791a1e34da58066ab692c213, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -252,7 +252,7 @@ AnimatorController:
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
   - serializedVersion: 5
-    m_Name: Talking
+    m_Name: Talk
     m_StateMachine: {fileID: -6456986761448770413}
     m_Mask: {fileID: 0}
     m_Motions: []
